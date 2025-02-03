@@ -5,8 +5,12 @@ name = "pypi"
 
 [packages]
 flask = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
+
+[scripts]
+start = "cd ./src && flask run -p 3001 --debug"
 
 [requires]
 python_version = "3.12"
