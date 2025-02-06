@@ -6,11 +6,18 @@ name = "pypi"
 [packages]
 flask = "*"
 flask-sqlalchemy = "*"
+flask-cors = "*"
+flask-migrate = "*"
+bcrypt = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 
 [scripts]
-start = "cd ./src && flask run -p 3001 --debug"
+start = "flask run -p 3001 --debug"
+init = "flask db init"
+migrate = "flask db migrate"
+upgrade = "flask db upgrade"
 
 [requires]
 python_version = "3.12"

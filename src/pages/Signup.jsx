@@ -1,4 +1,5 @@
 import React from 'react'
+import { signup } from '../apis';
 
 const Signup = () => {
   const [signupData, setSignupData] = React.useState({fullName:'', email:'', username:'', password:''})
@@ -10,7 +11,7 @@ const Signup = () => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    console.log('hi');
+    signup(signupData)
   };
 
   return (

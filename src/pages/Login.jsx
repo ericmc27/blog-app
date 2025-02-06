@@ -1,4 +1,5 @@
 import React from 'react';
+import { login } from '../apis';
 import { Link } from 'react-router-dom';
 
 const Login = () => {
@@ -9,9 +10,9 @@ const Login = () => {
       setLoginData(prev=>({...prev, [id]:value}))
   }
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    console.log('hi');
+    const response = await login(loginData)
   };
 
   return (
