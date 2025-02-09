@@ -9,8 +9,10 @@ class Users(db.Model):
   username = db.Column(db.String(50), unique=True, nullable=False)
   email = db.Column(db.String(320), unique=True, nullable=False)
   password = db.Column(db.LargeBinary, nullable=False)
+  photo = db.Column(db.String(255), unique=True, nullable=True)
 
-  def generate_password(self):
+  
+  def hash_password(self):
     self.password = bcrypt.hashpw(self.password.encode("utf-8"), bcrypt.gensalt())
 
   def compare_password(self, password):

@@ -1,8 +1,8 @@
 import React, {createContext, useContext} from 'react'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
-import HomePage from './pages/HomePage'
+import Profile from './pages/Profile'
 import ProtectedRoutes from './components/ProtectedRoutes'
 
 const GlobalContext = createContext(null)
@@ -24,10 +24,14 @@ const router = createBrowserRouter([
     element: <ProtectedRoutes/>,
     children: [
       {
-        path: '/home',
-        element: <HomePage/>
+        path: '/profile',
+        element: <Profile/>
       }
     ],
+  },
+  {
+    path: '*',
+    element: <Navigate to={'/'}/>
   }
   
 ])

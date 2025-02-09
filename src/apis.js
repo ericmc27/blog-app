@@ -17,8 +17,8 @@ export const login = async ({email, password})=>{
     if(response.status === 200){
         const data = await response.json()
         localStorage.setItem('JWT', data.token)
-        localStorage.setItem("User Full Name", data.fullName)
-        window.location.replace('/home')
+        localStorage.setItem('profilePicturePath', data.profilePicturePath)
+        window.location.replace('/profile')
     }
 
 }
@@ -42,8 +42,28 @@ export const signup = async ({fullName, email, username, password})=>{
     )
 }
 
+export const uploadProfilePicture = async (profilePicture)=>{
+    const form = new FormData()
+    form.append('file', profilePicture)
+
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/upload-profile-picture`,
+        {
+            method: 'POST',
+            body: form,
+            headers: {
+                'Authorization': `Bearer ${getJwtToken()}`
+            }
+        }
+    )
+
+    if(response.status===200){
+        const data = await response.json()
+        return data.profilePicturePath
+    }
+}
+
 export const verifyJwt = async ()=>{
-    const token = localStorage.getItem("JWT")
+    const token = getJwtToken()
     
     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/private`,
         {
@@ -60,4 +80,8 @@ export const verifyJwt = async ()=>{
     }else{
         return null
     }
-} 
+}
+
+const getJwtToken = ()=>{
+    return localStorage.getItem('JWT')
+}

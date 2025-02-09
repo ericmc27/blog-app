@@ -10,6 +10,9 @@ flask-cors = "*"
 flask-migrate = "*"
 bcrypt = "*"
 flask-jwt-extended = "*"
+werkzeug = "*"
+python-magic = "*"
+python-magic-bin = "*"
 
 [dev-packages]
 
