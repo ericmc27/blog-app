@@ -15,7 +15,7 @@ const Signup = () => {
   };
 
   return (
-    <div className='container flex justify-center items-center h-screen'>
+    <div className='flex justify-center items-center h-screen'>
       <form
         style={{ height: '450px', width: '374px' }}
         className='flex flex-col items-center shadow-2xl rounded-sm bg-white'

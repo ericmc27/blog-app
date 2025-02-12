@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from .models import Users, db
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from .models import Users, Blogs, db
 from werkzeug.utils import secure_filename
 import os
 import uuid
@@ -15,8 +15,9 @@ def login():
   userExists = Users.query.filter_by(email=email).first()
 
   if userExists and userExists.compare_password(password):
-    token = create_access_token(identity=userExists.username)
-    return jsonify({'login':'successful', 'token':token, 'profilePicturePath':userExists.photo}), 200
+    claims = {'id':userExists.id}
+    token = create_access_token(identity=userExists.username, additional_claims=claims)
+    return jsonify({'login':'successful', 'token':token, 'profilePicturePath':userExists.photo, 'blogsWritten':len(userExists.blogs)}), 200
 
   return jsonify({'login':'unsuccessful'}), 401
 
@@ -68,7 +69,23 @@ def upload():
   except Exception as e:
     return jsonify({'message':'Error'}), 500 #For now, I am checking for KeyError exception
   
+@api.route('submit-blog', methods=['POST'])
+@jwt_required()
+def submit_blog():
+  data = request.get_json()
+  new_blog = Blogs(author_id=get_jwt()['id'], blog_title=data['title'], blog_body=data['body'])
+  db.session.add(new_blog)
+  db.session.commit()
+  
+  return jsonify({'title':data['title'], 'body':data['body']})
 
+
+@api.route('get-user-blogs', methods=['GET'])
+@jwt_required()
+def get_blogs():
+  current_user = Users.query.filter_by(id=get_jwt()['id']).first()
+  blogs = [blog.serialize() for blog in current_user.blogs]
+  return blogs
 
 @api.route('private', methods=['POST'])
 @jwt_required()

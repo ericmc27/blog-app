@@ -1,49 +1,59 @@
-import React, {createContext, useContext} from 'react'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import Profile from './pages/Profile'
-import ProtectedRoutes from './components/ProtectedRoutes'
+import React from 'react';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from 'react-router-dom';
 
-const GlobalContext = createContext(null)
+import { useQueryClient } from '@tanstack/react-query';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Profile from './pages/Profile';
+import WriteBlog from './pages/WriteBlog';
+import ProtectedRoutes from './components/ProtectedRoutes';
 
-const useGlobalContext = ()=>{
-  return useContext(GlobalContext)
-}
+const GlobalContext = React.createContext(null);
 
-const router = createBrowserRouter([
+const useGlobalContext = () => {
+  return React.useContext(GlobalContext);
+};
+
+const useQueryClientFn = () => {
+  return useQueryClient();
+};
+
+export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Login useGlobalContext={useGlobalContext}/>
+    element: <Login />,
   },
   {
     path: '/signup',
-    element: <Signup/>
+    element: <Signup />,
   },
   {
-    element: <ProtectedRoutes/>,
+    element: <ProtectedRoutes />,
     children: [
       {
         path: '/profile',
-        element: <Profile/>
-      }
+        element: <Profile />,
+      },
+      {
+        path: '/write-blog',
+        element: <WriteBlog useQueryClientFn={useQueryClientFn} />,
+      },
     ],
   },
   {
     path: '*',
-    element: <Navigate to={'/'}/>
-  }
-  
-])
-
-
+    element: <Navigate to={'/'} />,
+  },
+]);
 
 function App() {
   return (
-    <GlobalContext.Provider value={0}>
-       <RouterProvider router={router}/>
-    </GlobalContext.Provider>
-  )
+      <RouterProvider router={router} />
+  );
 }
 
-export default App
+export default App;

@@ -16,7 +16,7 @@ const Login = () => {
   };
 
   return (
-    <div className='container flex flex-col justify-center items-center h-screen'>
+    <div className='flex flex-col justify-center items-center h-screen'>
       <h1
         style={{ fontFamily: 'Permanent Marker' }}
         className='text-5xl text-purple-700'
