@@ -1,7 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
-import bcrypt
+from datetime import datetime
+from bcrypt import hashpw, checkpw, gensalt
+from hashlib import sha256
 
 db = SQLAlchemy()
 
@@ -19,11 +21,12 @@ class Users(db.Model):
 
   
   def hash_password(self):
-    self.password = bcrypt.hashpw(self.password.encode("utf-8"), bcrypt.gensalt())
+    self.password = hashpw(self.password.encode("utf-8"), gensalt())
 
   def compare_password(self, password):
-    return bcrypt.checkpw(password.encode("utf-8"), self.password)
-
+    return checkpw(password.encode("utf-8"), self.password)
+  
+  
   def serialize(self):
     return {
       'Full Name': self.full_name,
@@ -38,11 +41,23 @@ class Blogs(db.Model):
   author_id = db.Column(db.Integer, ForeignKey('users.id'))
   blog_title = db.Column(db.String(150), nullable=True)
   blog_body = db.Column(db.Text, nullable=True)
+  created_at = db.Column(db.DateTime, default=datetime.today())
   
   author = relationship('Users', back_populates='blogs')
+  
+  def transform_date(self):
+    return self.created_at.strftime('%m/%d/%Y')
+  
+  def hashed_blog_id(self):
+    secret_key = "&$/5||-2:lebronL=ebronLebronLebro$nLebron54"
+    unique_identifier = f"{self.id}{secret_key}"
+    return f"{sha256(unique_identifier.encode()).hexdigest()}", self.id
+  
   
   def serialize(self):
     return {
       'title':self.blog_title,
-      'body':self.blog_body
+      'body':self.blog_body,
+      'date':self.transform_date(),
+      'id':self.hashed_blog_id()[0]
     }

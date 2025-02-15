@@ -10,13 +10,14 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import WriteBlog from './pages/WriteBlog';
+import ReadBlog from './pages/ReadBlog';
 import ProtectedRoutes from './components/ProtectedRoutes';
 
-const GlobalContext = React.createContext(null);
+// const GlobalContext = React.createContext(null);
 
-const useGlobalContext = () => {
-  return React.useContext(GlobalContext);
-};
+// const useGlobalContext = () => {
+//   return React.useContext(GlobalContext);
+// };
 
 const useQueryClientFn = () => {
   return useQueryClient();
@@ -30,6 +31,10 @@ export const router = createBrowserRouter([
   {
     path: '/signup',
     element: <Signup />,
+  },
+  {
+    path: '/blog/:id',
+    element: <ReadBlog useQueryClientFn={useQueryClientFn}/>
   },
   {
     element: <ProtectedRoutes />,

@@ -1,15 +1,14 @@
 import { createRoot } from "react-dom/client";
-import { QueryClient } from "@tanstack/react-query";
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import "./index.css";
 import App from "./App.jsx";
 
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      cacheTime: Infinity,
+      gcTime: Infinity,
       staleTime: Infinity,
     },
   },
@@ -19,11 +18,13 @@ const persister = createSyncStoragePersister({
   storage: window.localStorage,
 });
 
+persistQueryClient({
+  queryClient,
+  persister
+})
+
 createRoot(document.getElementById("root")).render(
-  <PersistQueryClientProvider
-    client={queryClient}
-    persistOptions={{ persister }}
-  >
+  <QueryClientProvider client={queryClient}>
     <App />
-  </PersistQueryClientProvider>
+  </QueryClientProvider>
 );

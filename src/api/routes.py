@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from .models import Users, Blogs, db
 from werkzeug.utils import secure_filename
+import redis
 import os
 import uuid
 import magic
@@ -17,7 +18,7 @@ def login():
   if userExists and userExists.compare_password(password):
     claims = {'id':userExists.id}
     token = create_access_token(identity=userExists.username, additional_claims=claims)
-    return jsonify({'login':'successful', 'token':token, 'profilePicturePath':userExists.photo, 'blogsWritten':len(userExists.blogs)}), 200
+    return jsonify({'token':token, 'profilePicturePath':userExists.photo, 'fullName':userExists.full_name}), 200
 
   return jsonify({'login':'unsuccessful'}), 401
 
@@ -69,6 +70,9 @@ def upload():
   except Exception as e:
     return jsonify({'message':'Error'}), 500 #For now, I am checking for KeyError exception
   
+
+r = redis.Redis(host='localhost', port=6379)
+
 @api.route('submit-blog', methods=['POST'])
 @jwt_required()
 def submit_blog():
@@ -76,8 +80,10 @@ def submit_blog():
   new_blog = Blogs(author_id=get_jwt()['id'], blog_title=data['title'], blog_body=data['body'])
   db.session.add(new_blog)
   db.session.commit()
-  
-  return jsonify({'title':data['title'], 'body':data['body']})
+  hash, blog_id = new_blog.hashed_blog_id()
+  r.set(hash, blog_id)
+
+  return jsonify(new_blog.serialize())
 
 
 @api.route('get-user-blogs', methods=['GET'])
@@ -85,7 +91,15 @@ def submit_blog():
 def get_blogs():
   current_user = Users.query.filter_by(id=get_jwt()['id']).first()
   blogs = [blog.serialize() for blog in current_user.blogs]
+  
   return blogs
+
+@api.route('get-single-blog/<string:id>', methods=['GET'])
+def get_single_blog(id):
+  current_blog_id = int(r.get(id).decode('utf-8'))
+  blog = Blogs.query.filter_by(id=current_blog_id).first().serialize()
+
+  return blog
 
 @api.route('private', methods=['POST'])
 @jwt_required()

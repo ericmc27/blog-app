@@ -13,6 +13,7 @@ flask-jwt-extended = "*"
 werkzeug = "*"
 python-magic = "*"
 python-magic-bin = "*"
+redis = "*"
 
 [dev-packages]
 

@@ -19,7 +19,7 @@ export const login = async ({ email, password }) => {
     const data = await response.json();
     localStorage.setItem("JWT", data.token);
     localStorage.setItem("profilePicturePath", data.profilePicturePath);
-    localStorage.setItem("blogsWritten", data.blogsWritten)
+    localStorage.setItem("fullName", data.fullName)
     window.location.replace("/profile");
   }
 };
@@ -102,8 +102,14 @@ export const getBlogs = async () => {
   }
 };
 
+export const getSingleBlog = async (id) => {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-single-blog/${id}`)
+  const data = await response.json()
+  return data
+}
+
 export const verifyJwt = async () => {
-  const token = getJwtToken();
+  const token = getJwtToken(); 
 
   const response = await fetch(
     `${import.meta.env.VITE_BACKEND_URL}/api/private`,
