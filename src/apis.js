@@ -20,7 +20,7 @@ export const login = async ({ email, password }) => {
     localStorage.setItem("JWT", data.token);
     localStorage.setItem("profilePicturePath", data.profilePicturePath);
     localStorage.setItem("fullName", data.fullName)
-    window.location.replace("/profile");
+    window.location.replace("/");
   }
 };
 
@@ -85,7 +85,7 @@ export const submitBlog = async ({ title, body }) => {
   }
 };
 
-export const getBlogs = async () => {
+export const getUserBlogs = async () => {
   const response = await fetch(
     `${import.meta.env.VITE_BACKEND_URL}/api/get-user-blogs`,
     {
@@ -101,6 +101,19 @@ export const getBlogs = async () => {
     return blogs
   }
 };
+
+export const getAllBlogs = async ()=>{
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-all-blogs`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${getJwtToken()}`
+      }
+    }
+  )
+  const data = await response.json()
+  return data
+}
 
 export const getSingleBlog = async (id) => {
   const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-single-blog/${id}`)
@@ -125,7 +138,7 @@ export const verifyJwt = async () => {
   if (response.status === 200) {
     return token;
   } else {
-    return null;
+    window.location.href = "/login"
   }
 };
 

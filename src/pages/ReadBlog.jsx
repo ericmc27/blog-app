@@ -11,8 +11,13 @@ const ReadBlog = ({useQueryClientFn})=>{
   
   return(
       <div className="flex flex-col h-screen items-center">
-      <h1 className="text-5xl capitalize">{cachedBlog ? cachedBlog.title : currentBlog?.title}</h1>
-      <div>
+      <h1 className="text-4xl capitalize mt-5 max-w-200 break-words">
+        {cachedBlog ? cachedBlog.title : currentBlog?.title}
+      </h1>
+
+      <hr className="border-t-2 border-dark w-150 my-4 mb-15"/>
+
+      <div className="w-175 text-justify">
         {cachedBlog ? cachedBlog.body : currentBlog?.body}
       </div>
     </div>

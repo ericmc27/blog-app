@@ -88,11 +88,18 @@ def submit_blog():
 
 @api.route('get-user-blogs', methods=['GET'])
 @jwt_required()
-def get_blogs():
+def get_user_blogs():
   current_user = Users.query.filter_by(id=get_jwt()['id']).first()
   blogs = [blog.serialize() for blog in current_user.blogs]
   
   return blogs
+
+@api.route('get-all-blogs', methods=['GET'])
+@jwt_required()
+def get_all_blogs():
+  blogs = Blogs.query.all()
+  blogs_list = [blog.serialize() for blog in blogs]
+  return blogs_list
 
 @api.route('get-single-blog/<string:id>', methods=['GET'])
 def get_single_blog(id):

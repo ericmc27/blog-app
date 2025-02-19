@@ -1,12 +1,12 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useCustomNavigate } from "../components/customHooks";
 import { submitBlog } from "../apis";
 import { useMutation } from "@tanstack/react-query";
 
 const WriteBlog = ({ useQueryClientFn }) => {
   const [blogData, setBlogData] = React.useState({ title: "", body: "" });
-  const navigate = useNavigate();
-  const queryClient = useQueryClientFn();
+  const { navigateToProfile } = useCustomNavigate();
+  const queryClient = useQueryClientFn(); 
   const { mutate } = useMutation({
     mutationFn: submitBlog,
     onSuccess: (newBlog) => {
@@ -54,12 +54,12 @@ const WriteBlog = ({ useQueryClientFn }) => {
         <div className="flex">
           <button
             type="submit"
-            className="border ms-55 me-5 mt-5 p-3 hover:cursor-pointer rounded"
+            className="border ms-55 me-5 mt-5 p-3 hover:cursor-pointer hover:bg-purple-700 hover:text-white rounded"
           >
             ADD NEW BLOG
           </button>
 
-          <button className="border mt-5 p-3 hover:cursor-pointer rounded" onClick={() => navigate("/profile")}>
+          <button className="border mt-5 p-3 hover:cursor-pointer hover:bg-purple-700 hover:text-white rounded" onClick={navigateToProfile}>
             PROFILE
           </button>
         </div>
