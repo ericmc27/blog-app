@@ -11,9 +11,9 @@ flask-migrate = "*"
 bcrypt = "*"
 flask-jwt-extended = "*"
 werkzeug = "*"
+redis = "*"
 python-magic = "*"
 python-magic-bin = "*"
-redis = "*"
 
 [dev-packages]
 

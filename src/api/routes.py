@@ -71,7 +71,7 @@ def upload():
     return jsonify({'message':'Error'}), 500 #For now, I am checking for KeyError exception
   
 
-r = redis.Redis(host='localhost', port=6379)
+r = redis.Redis(host='127.0.0.1', port=6379)
 
 @api.route('submit-blog', methods=['POST'])
 @jwt_required()

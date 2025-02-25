@@ -3,7 +3,7 @@ import {
   useProfilePicture,
   useCustomNavigate,
   useCustomQuery,
-} from "../components/customHooks";
+} from "../hooks/customHooks";
 import { uploadProfilePicture, getUserBlogs } from "../apis";
 
 const Profile = () => {
@@ -43,7 +43,7 @@ const Profile = () => {
 
         <h3 className="mt-2 capitalize">{fullName}</h3>
 
-        <div className="flex flex-col gap-6 bg-black px-10">
+        <div className="flex flex-col gap-6 bg-white px-10">
           {blogs?.map((blog, index) => {
             return (
               <div

@@ -3,32 +3,29 @@ import {
   useProfilePicture,
   useCustomNavigate,
   useCustomQuery,
-} from "../components/customHooks";
+} from "../hooks/customHooks";
 import { getAllBlogs } from "../apis";
 
 const Feed = ({ useQueryClientFn }) => {
   const [selection, setSelection] = React.useState("posts");
-  const { navigateToProfile } = useCustomNavigate();
+  const { navigateToProfile, navigateToBlog } = useCustomNavigate();
   const [profilePicture, setProfilePicture] = useProfilePicture();
   const { data: posts } = useCustomQuery(["feedBlogs"], getAllBlogs);
 
   return (
     <div className="h-screen">
-      <div className="mx-auto my-7 border h-11 w-115 rounded"></div>
+      <div className="ms-144 my-7 border h-11 w-125 rounded"></div>
 
       <div className="flex">
         <ul className="ms-10 h-100 w-55 p-2 bg-white">
-          <li className={`flex flex-col p-2 rounded`}>
+          <li
+            className={`flex flex-col p-2 rounded`}
+            onClick={() => navigateToProfile()}
+          >
             <img
-              className="w-26 h-27 mb-4 rounded-full outline-purple-700"
+              className="w-18 h-18 mb-4 rounded-full m-auto hover:cursor-pointer"
               src={profilePicture}
             />
-            <div
-              onClick={navigateToProfile}
-              className="ps-10 hover:cursor-pointer"
-            >
-              Go to Profile
-            </div>
           </li>
 
           <li
@@ -55,9 +52,31 @@ const Feed = ({ useQueryClientFn }) => {
         <div className="ms-87">
           {selection === "posts"
             ? posts?.map((post) => (
-                <div className="border h-100 w-100 bg-white mb-4 rounded">
-                  {post.title}
-                  {post.body}
+                <div className="flex flex-col items-center h-115 w-110 mb-4 bg-white border-0 rounded p-5 bg-gradient-to-b from-white to-red-50">
+                  <div className="w-full text-center pb-2 flex">
+                    <img
+                      className="w-15 h-15 rounded-full"
+                      src={`${import.meta.env.VITE_BACKEND_URL}/static/${
+                        post.profilePicture
+                      }`}
+                    />
+                    <label className="mt-4 capitalize ms-2 me-auto">
+                      Written by {post.author}
+                    </label>
+                    <label className="text-gray-400">{post.date}</label>
+                  </div>
+
+                  <h1 className="text-2xl pb-2">{post.title}</h1>
+
+                  <div className="text-justify">
+                    {post.body.slice(0, 550)}...
+                  </div>
+                  <button
+                    onClick={() => navigateToBlog(post.id)}
+                    className="border p-3 mt-2 hover:cursor-pointer bg-red-500 text-white"
+                  >
+                    Read More...
+                  </button>
                 </div>
               ))
             : selection === "joinGroup" && <h1>Join group</h1>}

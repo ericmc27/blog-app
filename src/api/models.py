@@ -26,6 +26,13 @@ class Users(db.Model):
   def compare_password(self, password):
     return checkpw(password.encode("utf-8"), self.password)
   
+  def get_first_two_names(self):
+    full_name = self.full_name.split(' ')
+    if len(full_name) > 1:
+      return f"{full_name[0]} {full_name[1]}"
+    else:
+      return f"{full_name}"
+  
   
   def serialize(self):
     return {
@@ -59,5 +66,7 @@ class Blogs(db.Model):
       'title':self.blog_title,
       'body':self.blog_body,
       'date':self.transform_date(),
-      'id':self.hashed_blog_id()[0]
+      'id':self.hashed_blog_id()[0],
+      'profilePicture': self.author.photo,
+      'author': f"{self.author.get_first_two_names()}"
     }
