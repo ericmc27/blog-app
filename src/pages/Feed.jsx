@@ -17,13 +17,13 @@ const Feed = ({ useQueryClientFn }) => {
       <div className="ms-144 my-7 border h-11 w-125 rounded"></div>
 
       <div className="flex">
-        <ul className="ms-10 h-100 w-55 p-2 bg-white">
+        <ul className="ms-10 h-100 w-55 p-2 shadow-2xl fixed bg-white rounded-2xl">
           <li
             className={`flex flex-col p-2 rounded`}
-            onClick={() => navigateToProfile()}
+            onClick={() => navigateToProfile(localStorage.getItem("id"))}
           >
             <img
-              className="w-18 h-18 mb-4 rounded-full m-auto hover:cursor-pointer"
+              className="w-15 h-15 mb-4 rounded-full m-auto hover:cursor-pointer border border-gray-300"
               src={profilePicture}
             />
           </li>
@@ -34,7 +34,7 @@ const Feed = ({ useQueryClientFn }) => {
               selection === "posts" && "bg-purple-100"
             }`}
           >
-            <img height={"45px"} width={"45px"} src="/post.png" />
+            <img className="w-9 h-9" src="/post.png" />
             Posts
           </li>
 
@@ -44,43 +44,48 @@ const Feed = ({ useQueryClientFn }) => {
               selection === "joinGroup" && "bg-purple-100"
             }`}
           >
-            <img height={"45px"} width={"45px"} src="/group.png" />
+            <img className="w-9 h-9" src="/group.png" />
             Join Group
           </li>
         </ul>
 
-        <div className="ms-87">
-          {selection === "posts"
-            ? posts?.map((post) => (
-                <div className="flex flex-col items-center h-115 w-110 mb-4 bg-white border-0 rounded p-5 bg-gradient-to-b from-white to-red-50">
-                  <div className="w-full text-center pb-2 flex">
-                    <img
-                      className="w-15 h-15 rounded-full"
-                      src={`${import.meta.env.VITE_BACKEND_URL}/static/${
-                        post.profilePicture
-                      }`}
-                    />
-                    <label className="mt-4 capitalize ms-2 me-auto">
-                      Written by {post.author}
-                    </label>
-                    <label className="text-gray-400">{post.date}</label>
-                  </div>
-
-                  <h1 className="text-2xl pb-2">{post.title}</h1>
-
-                  <div className="text-justify">
-                    {post.body.slice(0, 550)}...
-                  </div>
-                  <button
-                    onClick={() => navigateToBlog(post.id)}
-                    className="border p-3 mt-2 hover:cursor-pointer bg-red-500 text-white"
-                  >
-                    Read More...
-                  </button>
+        {selection === "posts" && posts?.length > 0 ? (
+          <div className="ms-132 bg-white w-150 ps-25 pt-4 rounded">
+            {posts.map((post) => (
+              <div className="flex flex-col items-center h-115 w-110 mb-4 bg-white border border-gray-300 rounded p-5 bg-gradient-to-b from-white to-red-50">
+                <div className="w-full text-center pb-2 flex">
+                  <img
+                    onClick={() => navigateToProfile(post.id)}
+                    className="w-15 h-15 rounded-full border border-gray-300 hover:cursor-pointer"
+                    src={`${import.meta.env.VITE_BACKEND_URL}/static/${
+                      post.profilePicture
+                    }`}
+                  />
+                  <label className="mt-4 capitalize ms-2 me-auto">
+                    Written by {post.author}
+                  </label>
+                  <label className="text-gray-400">{post.date}</label>
                 </div>
-              ))
-            : selection === "joinGroup" && <h1>Join group</h1>}
-        </div>
+
+                <h1 className="text-2xl pb-2">{post.title}</h1>
+
+                <div className="text-justify">{post.body.slice(0, 550)}...</div>
+                <button
+                  onClick={() => navigateToBlog(post.id)}
+                  className="border p-3 mt-2 hover:cursor-pointer bg-red-500 text-white"
+                >
+                  Read More...
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          selection === "joinGroup" && (
+            <div className="ms-132 bg-white w-150 ps-25 pt-4 rounded">
+              <h1>Join group</h1>
+            </div>
+          )
+        )}
       </div>
     </div>
   );

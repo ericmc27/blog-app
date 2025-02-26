@@ -18,8 +18,8 @@ export const useProfilePicture = ()=>{
 export const useCustomNavigate = ()=>{
   const navigate = useNavigate()
 
-  const navigateToProfile = ()=>{
-    navigate("/profile")
+  const navigateToProfile = (id)=>{
+    navigate(`/profile?id=${id}`)
   }
 
   const navigateToBlog = (id)=>{

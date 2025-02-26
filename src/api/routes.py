@@ -7,7 +7,9 @@ import os
 import uuid
 import magic
 
+
 api = Blueprint('api', __name__)
+r = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
 
 @api.route('/login', methods=['POST'])
 def login():
@@ -18,7 +20,7 @@ def login():
   if userExists and userExists.compare_password(password):
     claims = {'id':userExists.id}
     token = create_access_token(identity=userExists.username, additional_claims=claims)
-    return jsonify({'token':token, 'profilePicturePath':userExists.photo, 'fullName':userExists.full_name}), 200
+    return jsonify({'token':token, 'id':userExists.hashed_user_id()[0], 'profilePicturePath':userExists.photo, 'fullName':userExists.full_name}), 200
 
   return jsonify({'login':'unsuccessful'}), 401
 
@@ -33,6 +35,8 @@ def signup():
     new_user.hash_password()
     db.session.add(new_user)
     db.session.commit()
+    hash, user_id = new_user.hashed_user_id()
+    r.set(hash, user_id)
     return jsonify({'signup':'successful'}), 200
 
   return jsonify({'signup':'unsuccessful'}), 409
@@ -71,7 +75,6 @@ def upload():
     return jsonify({'message':'Error'}), 500 #For now, I am checking for KeyError exception
   
 
-r = redis.Redis(host='127.0.0.1', port=6379)
 
 @api.route('submit-blog', methods=['POST'])
 @jwt_required()
@@ -85,28 +88,28 @@ def submit_blog():
 
   return jsonify(new_blog.serialize())
 
-
-@api.route('get-user-blogs', methods=['GET'])
-@jwt_required()
-def get_user_blogs():
-  current_user = Users.query.filter_by(id=get_jwt()['id']).first()
-  blogs = [blog.serialize() for blog in current_user.blogs]
-  
-  return blogs
-
 @api.route('get-all-blogs', methods=['GET'])
 @jwt_required()
 def get_all_blogs():
   blogs = Blogs.query.all()
   blogs_list = [blog.serialize() for blog in blogs]
+  print(blogs_list)
   return blogs_list
 
 @api.route('get-single-blog/<string:id>', methods=['GET'])
 def get_single_blog(id):
-  current_blog_id = int(r.get(id).decode('utf-8'))
+  current_blog_id = int(r.get(id))
   blog = Blogs.query.filter_by(id=current_blog_id).first().serialize()
 
   return blog
+
+@api.route('get-user-data/<string:id>', methods=['GET'])
+@jwt_required()
+def get_user_data(id):
+  id = r.get(id)
+  current_user = Users.query.filter_by(id=id).first().serialize()
+  
+  return jsonify(current_user)
 
 @api.route('private', methods=['POST'])
 @jwt_required()

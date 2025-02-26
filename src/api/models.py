@@ -26,6 +26,12 @@ class Users(db.Model):
   def compare_password(self, password):
     return checkpw(password.encode("utf-8"), self.password)
   
+  def hashed_user_id(self):
+    secret_key = "&$/5||-2:lebronL=ebronLebronLebro$nLebron54"
+    unique_identifier = f"{self.id}{secret_key}"
+    return f"{sha256(unique_identifier.encode()).hexdigest()}", self.id
+  
+  
   def get_first_two_names(self):
     full_name = self.full_name.split(' ')
     if len(full_name) > 1:
@@ -36,8 +42,9 @@ class Users(db.Model):
   
   def serialize(self):
     return {
-      'Full Name': self.full_name,
-      'Username': self.username,
+      'fullName': self.full_name,
+      'profilePicture': self.photo,
+      'blogs': [blog.serialize() for blog in self.blogs]
     }
 
 

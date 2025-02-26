@@ -29,20 +29,23 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
+  
   {
     path: "/signup",
     element: <Signup />,
   },
+
   {
     path: "/blog/:id",
     element: <ReadBlog useQueryClientFn={useQueryClientFn} />,
   },
+
   {
     element: <ProtectedRoutes />,
     children: [
       {
         path: "/",
-        element: <Feed  useQueryClientFn={useQueryClientFn}/>,
+        element: <Feed useQueryClientFn={useQueryClientFn} />,
       },
       {
         path: "/profile",
@@ -52,8 +55,10 @@ export const router = createBrowserRouter([
         path: "/write-blog",
         element: <WriteBlog useQueryClientFn={useQueryClientFn} />,
       },
+    
     ],
   },
+
   {
     path: "*",
     element: <Navigate to={"/login"} />,

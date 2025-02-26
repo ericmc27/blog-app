@@ -7,6 +7,7 @@ const WriteBlog = ({ useQueryClientFn }) => {
   const [blogData, setBlogData] = React.useState({ title: "", body: "" });
   const { navigateToProfile } = useCustomNavigate();
   const queryClient = useQueryClientFn();
+
   const { mutate } = useMutation({
     mutationFn: submitBlog,
     onSuccess: (newBlog) => {
@@ -76,7 +77,7 @@ const WriteBlog = ({ useQueryClientFn }) => {
 
           <button
             className="border mt-5 p-3 hover:cursor-pointer hover:bg-purple-700 hover:text-white rounded"
-            onClick={navigateToProfile}
+            onClick={()=>(navigateToProfile(localStorage.getItem("id")))}
           >
             PROFILE
           </button>
