@@ -7,6 +7,8 @@ const WriteBlog = ({ useQueryClientFn }) => {
   const [blogData, setBlogData] = React.useState({ title: "", body: "" });
   const { navigateToProfile } = useCustomNavigate();
   const queryClient = useQueryClientFn();
+  const divRef = React.useRef(null)
+  const textAreaRef = React.useRef(null)
 
   const { mutate } = useMutation({
     mutationFn: submitBlog,
@@ -19,15 +21,20 @@ const WriteBlog = ({ useQueryClientFn }) => {
   });
 
   const handleBlogDataChange = (e) => {
-    console.log(blogData);
     const { id, value } = e.target;
     setBlogData((prev) => ({ ...prev, [id]: value }));
+
+    if(id === "body"){
+      textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
+      divRef.current.scrollTop = divRef.current.scrollHeight
+    } 
   };
 
   const handleSubmitBlog = async (e) => {
     e.preventDefault();
     mutate(blogData);
   };
+
 
   return (
     <div className="flex flex-col items-center h-screen">
@@ -44,8 +51,9 @@ const WriteBlog = ({ useQueryClientFn }) => {
 
         <div className="flex gap-15">
           <textarea
+            ref={textAreaRef}
             id="body"
-            className="border h-125 w-150 mt-5 px-5 pt-5 rounded focus:outline-0 text-justify" //
+            className="border h-125 w-150 mt-5 px-5 pt-5 pb-5 rounded focus:outline-0 text-justify" 
             type="text"
             placeholder="Body"
             value={blogData.body}
@@ -54,17 +62,18 @@ const WriteBlog = ({ useQueryClientFn }) => {
             onChange={handleBlogDataChange}
           />
 
-          <div className="rounded shadow-2xl mt-5 h-125 w-150 bg-white ">
-            <div className="text-center font-bold mt-4 break-words"> 
+          <div ref={divRef} className="rounded shadow-2xl mt-5 px-5 pb-5 h-125 w-150 bg-white overflow-auto">
+            <div className="text-center font-bold mt-4 break-words pb-4"> 
               {blogData.title}
             </div>
 
             <div
-              className="h-125 break-words mt-5 px-5 overflow-auto whitespace-pre-line text-justify"
+               className="break-words whitespace-pre-line text-justify"
             >
               {blogData.body}
             </div>
           </div>
+
         </div>
 
         <div className="flex">
