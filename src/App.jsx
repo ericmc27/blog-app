@@ -1,4 +1,7 @@
 import React from "react";
+import { useCustomQuery } from "./hooks/customHooks";
+import { getAllBlogs } from "./apis";
+import { io } from "socket.io-client";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -19,6 +22,8 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 // const useGlobalContext = () => {
 //   return React.useContext(GlobalContext);
 // };
+
+
 
 const useQueryClientFn = () => {
   return useQueryClient();
@@ -45,11 +50,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Feed useQueryClientFn={useQueryClientFn} />,
+        element: <Feed/>,
       },
       {
         path: "/profile",
-        element: <Profile />,
+        element: <Profile/>,
       },
       {
         path: "/write-blog",
@@ -65,8 +70,28 @@ export const router = createBrowserRouter([
   },
 ]);
 
+
+
+const socket = io("http://127.0.0.1:5000")
+
 function App() {
-  return <RouterProvider router={router} />;
+  const queryClient = useQueryClientFn()
+
+  React.useEffect(()=>{
+    socket.on("userProfilePictureUpdate", (data)=>{
+      queryClient.setQueryData(["user", data.id], (oldData)=>{
+        return {...oldData, profilePicture:data.newProfilePicturePath}
+    })
+
+    queryClient.invalidateQueries(["feedBlogs"])
+    queryClient.prefetchQuery({queryKey: ["feedBlogs"], queryFn: getAllBlogs})
+  })
+  }, [])
+
+  return(
+    <RouterProvider router={router} />
+  )
+ 
 }
 
 export default App;

@@ -7,7 +7,7 @@ const ReadBlog = ({ useQueryClientFn }) => {
   const queryClient = useQueryClientFn();
 
   const cachedBlog = queryClient
-    .getQueryData(["blogs"])
+    .getQueryData(["feedBlogs"])
     ?.find((blog) => blog.id === id);
 
   const { data: currentBlog } = useQuery({

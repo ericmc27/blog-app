@@ -1,9 +1,9 @@
-from flask import Flask, send_from_directory, make_response
+from flask import Flask, send_from_directory, make_response, request
 import os
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
-from api import api, db
+from api import api, socketio, db
 
 
 app = Flask(__name__, static_folder=None)
@@ -18,8 +18,12 @@ Migrate(app, db)
 JWTManager(app)
 app.register_blueprint(api, url_prefix='/api')
 
+# socketio = SocketIO(app, cors_allowed_origins="*")
+socketio.init_app(app, cors_allowed_origins="*")
+
 @app.route('/static/<path:filename>')
 def send_file(filename):
   response = make_response(send_from_directory(os.path.join(os.getcwd(), 'src', 'static'), filename))
   response.headers['Cache-Control'] = 'public, max-age=31536000'
   return response
+

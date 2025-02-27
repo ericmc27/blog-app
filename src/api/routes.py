@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_socketio import SocketIO
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from .models import Users, Blogs, db
 from werkzeug.utils import secure_filename
@@ -8,8 +9,10 @@ import uuid
 import magic
 
 
+
 api = Blueprint('api', __name__)
 r = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
+socketio = SocketIO()
 
 @api.route('/login', methods=['POST'])
 def login():
@@ -48,6 +51,8 @@ ALLOWED_MIME_TYPES = {'image/jpeg', 'image/jpg', 'image/png'}
 def upload():
   try:
     profile_picture = request.files['file']
+    id = request.form.get('id')
+  
 
     if profile_picture:
       mime = magic.Magic(mime=True)
@@ -64,6 +69,7 @@ def upload():
         current_user.photo = filename
         db.session.commit()
         
+        socketio.emit("userProfilePictureUpdate", {'id':id, 'newProfilePicturePath':filename})
         return jsonify({'profilePicturePath':filename}), 200
       else:
         return jsonify({'message':'Invalid image type'}), 400
@@ -93,7 +99,7 @@ def submit_blog():
 def get_all_blogs():
   blogs = Blogs.query.all()
   blogs_list = [blog.serialize() for blog in blogs]
-  print(blogs_list)
+
   return blogs_list
 
 @api.route('get-single-blog/<string:id>', methods=['GET'])

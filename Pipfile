@@ -13,12 +13,13 @@ flask-jwt-extended = "*"
 werkzeug = "*"
 redis = "*"
 python-magic = "*"
+flask-socketio = "*"
 python-magic-bin = "*"
 
 [dev-packages]
 
 [scripts]
-start = "flask run -p 3001 --debug"
+start = "flask run --debug"
 init = "flask db init"
 migrate = "flask db migrate"
 upgrade = "flask db upgrade"

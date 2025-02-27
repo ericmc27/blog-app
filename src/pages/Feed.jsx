@@ -1,16 +1,16 @@
 import React from "react";
 import {
-  useProfilePicture,
   useCustomNavigate,
   useCustomQuery,
 } from "../hooks/customHooks";
-import { getAllBlogs } from "../apis";
+import { getUserData, getAllBlogs } from "../apis";
 
-const Feed = ({ useQueryClientFn }) => {
+const Feed = () => {
+  const currentUserId = localStorage.getItem("id")
+  const { data: currentUserData } = useCustomQuery(["user", currentUserId], ()=> getUserData(currentUserId))
+  const { data: posts } = useCustomQuery(["feedBlogs"], getAllBlogs);
   const [selection, setSelection] = React.useState("posts");
   const { navigateToProfile, navigateToBlog } = useCustomNavigate();
-  const [profilePicture, setProfilePicture] = useProfilePicture();
-  const { data: posts } = useCustomQuery(["feedBlogs"], getAllBlogs);
 
   return (
     <div className="h-screen">
@@ -24,7 +24,7 @@ const Feed = ({ useQueryClientFn }) => {
           >
             <img
               className="w-15 h-15 mb-4 rounded-full m-auto hover:cursor-pointer border border-gray-300"
-              src={profilePicture}
+              src={`${import.meta.env.VITE_BACKEND_URL}/static/${currentUserData?.profilePicture}`}
             />
           </li>
 

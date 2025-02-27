@@ -45,9 +45,11 @@ export const signup = async ({ fullName, email, username, password }) => {
   );
 };
 
-export const uploadProfilePicture = async (profilePicture) => {
+export const uploadProfilePicture = async (profilePicture, id) => {
   const form = new FormData();
   form.append("file", profilePicture);
+  form.append("id", id)
+  // console.log(id)
 
   const response = await fetch(
     `${import.meta.env.VITE_BACKEND_URL}/api/upload-profile-picture`,
