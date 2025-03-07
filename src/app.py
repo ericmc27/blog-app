@@ -18,7 +18,7 @@ Migrate(app, db)
 JWTManager(app)
 app.register_blueprint(api, url_prefix='/api')
 
-# socketio = SocketIO(app, cors_allowed_origins="*")
+
 socketio.init_app(app, cors_allowed_origins="*")
 
 @app.route('/static/<path:filename>')

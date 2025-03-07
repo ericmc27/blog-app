@@ -1,26 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { getSingleBlog } from "../apis";
+import { useProfilePicture } from "../hooks/customHooks";
 
 const ReadBlog = ({ useQueryClientFn }) => {
-  const { id } = useParams();
+  const { blogId } = useParams();
+  const pageIndex =  useLocation().state?.pageIndex
   const queryClient = useQueryClientFn();
 
   const cachedBlog = queryClient
-    .getQueryData(["feedBlogs"])
-    ?.find((blog) => blog.id === id);
+    .getQueryData(["feedBlogs"])?.pages[pageIndex]?.blogs.find((blog) => blog.blogId === blogId);
 
   const { data: currentBlog } = useQuery({
-    queryKey: ["currentBlog", id],
-    queryFn: () => getSingleBlog(id),
+    queryKey: ["currentBlog", blogId],
+    queryFn: () => getSingleBlog(blogId),
     enabled: !cachedBlog,
   });
-  
-  const profilePicture = `${import.meta.env.VITE_BACKEND_URL}/static/${
-    cachedBlog ? cachedBlog.profilePicture : currentBlog?.profilePicture
-  }`; //need to fix
 
-  console.log(cachedBlog);
+  const authorProfilePicture = useProfilePicture(cachedBlog, currentBlog) || "/profile-picture-placeholder.png"
+
   return (
     <div className="flex flex-col h-screen items-center">
       <h1 className="text-4xl capitalize mt-5 max-w-200 break-words">
@@ -30,7 +28,7 @@ const ReadBlog = ({ useQueryClientFn }) => {
       <hr className="border-t-2 border-dark w-150 my-4 mb-3" />
 
       <div>
-        <img className="w-20 h-20 rounded-full mb-3" src={profilePicture} />
+        <img className="w-20 h-20 rounded-full mb-3" src={authorProfilePicture && authorProfilePicture} />
       </div>
 
       <div className="flex w-full">

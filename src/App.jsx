@@ -23,8 +23,6 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 //   return React.useContext(GlobalContext);
 // };
 
-
-
 const useQueryClientFn = () => {
   return useQueryClient();
 };
@@ -34,14 +32,14 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
-  
+
   {
     path: "/signup",
     element: <Signup />,
   },
 
   {
-    path: "/blog/:id",
+    path: "/blog/:blogId",
     element: <ReadBlog useQueryClientFn={useQueryClientFn} />,
   },
 
@@ -49,18 +47,17 @@ export const router = createBrowserRouter([
     element: <ProtectedRoutes />,
     children: [
       {
-        path: "/",
-        element: <Feed/>,
+        path: "/feed",
+        element: <Feed />,
       },
       {
         path: "/profile",
-        element: <Profile/>,
+        element: <Profile />,
       },
       {
         path: "/write-blog",
         element: <WriteBlog useQueryClientFn={useQueryClientFn} />,
       },
-    
     ],
   },
 
@@ -70,28 +67,53 @@ export const router = createBrowserRouter([
   },
 ]);
 
-
-
-const socket = io("http://127.0.0.1:5000")
+const socket = io("http://127.0.0.1:5000");
 
 function App() {
-  const queryClient = useQueryClientFn()
+  const queryClient = useQueryClientFn();
 
-  React.useEffect(()=>{
-    socket.on("userProfilePictureUpdate", (data)=>{
-      queryClient.setQueryData(["user", data.id], (oldData)=>{
-        return {...oldData, profilePicture:data.newProfilePicturePath}
-    })
+  React.useEffect(() => {
+    socket.on("userProfilePictureUpdate", (data) => {
+      queryClient.setQueryData(["user", data.userId], (oldData) => {
+        return { ...oldData, profilePicture: data.newProfilePicturePath };
+      });
 
-    queryClient.invalidateQueries(["feedBlogs"])
-    queryClient.prefetchQuery({queryKey: ["feedBlogs"], queryFn: getAllBlogs})
-  })
-  }, [])
+      queryClient.setQueryData(["feedBlogs"], (oldData) => {
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => {
+            return {
+              ...page,
+              blogs: page.blogs.map((blog) => {
+                if (blog.authorId === data.userId) {
+                  return {
+                    ...blog,
+                    authorProfilePicture: data.newProfilePicturePath,
+                  };
+                }
+              }),
+            };
+          }),
+        };
+      });
+    });
 
-  return(
-    <RouterProvider router={router} />
-  )
- 
+    socket.on("newBlogAdded", (data) => {
+      queryClient.setQueryData(["feedBlogs"], (oldData) => {
+        const updateFirstPage = {
+          ...oldData.pages[0],
+          blogs: [data, ...oldData.pages[0].blogs],
+        };
+
+        return {
+          ...oldData,
+          pages: [updateFirstPage, ...oldData.pages.slice(1)],
+        };
+      });
+    });
+  }, []);
+
+  return <RouterProvider router={router} />;
 }
 
 export default App;

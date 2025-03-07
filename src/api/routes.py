@@ -22,8 +22,8 @@ def login():
 
   if userExists and userExists.compare_password(password):
     claims = {'id':userExists.id}
-    token = create_access_token(identity=userExists.username, additional_claims=claims)
-    return jsonify({'token':token, 'id':userExists.hashed_user_id()[0], 'profilePicturePath':userExists.photo, 'fullName':userExists.full_name}), 200
+    jwt_token = create_access_token(identity=userExists.username, additional_claims=claims)
+    return jsonify({'jwtToken':jwt_token, 'userId':userExists.hashed_user_id()[0]}), 200
 
   return jsonify({'login':'unsuccessful'}), 401
 
@@ -46,12 +46,12 @@ def signup():
 
 ALLOWED_MIME_TYPES = {'image/jpeg', 'image/jpg', 'image/png'}
 
-@api.route('upload-profile-picture', methods=['POST'])
+@api.route('/upload-profile-picture', methods=['POST'])
 @jwt_required()
 def upload():
   try:
     profile_picture = request.files['file']
-    id = request.form.get('id')
+    user_id = request.form.get('userId')
   
 
     if profile_picture:
@@ -62,14 +62,17 @@ def upload():
         profile_picture.seek(0)
         filename = secure_filename(profile_picture.filename)
         filename = os.path.splitext(filename)[0] + "-" + str(uuid.uuid4()) + os.path.splitext(filename)[1]
-        storage_path = os.path.join(os.getcwd(), 'src', 'static', filename) #Double check when deploying
-        profile_picture.save(storage_path)
-        username = get_jwt_identity()
-        current_user = Users.query.filter_by(username=username).first()
+        storage_path = os.path.join(os.getcwd(), 'src', 'static') #Double check when deploying
+        profile_picture.save(os.path.join(storage_path, filename))
+        current_user = Users.query.filter_by(username=get_jwt_identity()).first()
+        
+        if current_user.photo:
+          os.remove(os.path.join(storage_path, current_user.photo))
+
         current_user.photo = filename
         db.session.commit()
         
-        socketio.emit("userProfilePictureUpdate", {'id':id, 'newProfilePicturePath':filename})
+        socketio.emit("userProfilePictureUpdate", {'userId':user_id, 'newProfilePicturePath':filename})
         return jsonify({'profilePicturePath':filename}), 200
       else:
         return jsonify({'message':'Invalid image type'}), 400
@@ -82,7 +85,7 @@ def upload():
   
 
 
-@api.route('submit-blog', methods=['POST'])
+@api.route('/submit-blog', methods=['POST'])
 @jwt_required()
 def submit_blog():
   data = request.get_json()
@@ -91,25 +94,39 @@ def submit_blog():
   db.session.commit()
   hash, blog_id = new_blog.hashed_blog_id()
   r.set(hash, blog_id)
+  
+  socketio.emit("newBlogAdded", new_blog.serialize())
 
   return jsonify(new_blog.serialize())
 
-@api.route('get-all-blogs', methods=['GET'])
+@api.route('/get-all-blogs/<int:page_param>', methods=['GET'])
 @jwt_required()
-def get_all_blogs():
-  blogs = Blogs.query.all()
+def get_all_blogs(page_param):
+  blogs_per_page = 3
+  current_offset = page_param * blogs_per_page
+  blogs = Blogs.query.offset(current_offset).limit(blogs_per_page).all()
   blogs_list = [blog.serialize() for blog in blogs]
 
-  return blogs_list
+  return jsonify({'blogs':blogs_list, 'nextPage':page_param+1 if len(blogs_list) == blogs_per_page else None})
 
-@api.route('get-single-blog/<string:id>', methods=['GET'])
+@api.route('/get-current-user-blogs/<int:page_param>', methods=['POST'])
+@jwt_required()
+def get_current_user_blogs(page_param):
+  current_user_id = int(r.get(request.get_json()["userId"]))
+  blogs_per_page = 3
+  current_offset = page_param * blogs_per_page
+  blogs = Blogs.query.filter_by(author_id=current_user_id).offset(current_offset).limit(blogs_per_page).all()
+  blogs_list = [blog.serialize() for blog in blogs]
+  return jsonify({'blogs':blogs_list, 'nextPage':page_param+1 if len(blogs_list) == blogs_per_page else None})
+
+@api.route('/get-single-blog/<string:id>', methods=['GET'])
 def get_single_blog(id):
   current_blog_id = int(r.get(id))
   blog = Blogs.query.filter_by(id=current_blog_id).first().serialize()
 
   return blog
 
-@api.route('get-user-data/<string:id>', methods=['GET'])
+@api.route('/get-user-data/<string:id>', methods=['GET'])
 @jwt_required()
 def get_user_data(id):
   id = r.get(id)
@@ -117,8 +134,8 @@ def get_user_data(id):
   
   return jsonify(current_user)
 
-@api.route('private', methods=['POST'])
+@api.route('/verify-jwt-token', methods=['POST'])
 @jwt_required()
-def verify_jwt():
+def verify_jwt_token():
   return jsonify({'token':'valid'})
 

@@ -4,15 +4,26 @@ import { Link } from "react-router-dom";
 
 const Login = () => {
   const [loginData, setLoginData] = React.useState({ email: "", password: "" });
+  const [loginError, setLoginError] = React.useState(false)
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setLoginData((prev) => ({ ...prev, [id]: value }));
   };
 
+  const handleOnClick = (e) => {
+    if(loginError){
+      setLoginError(false)
+    }
+  }
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const response = await login(loginData);
+
+    if(response.status === 401){
+      setLoginError(true)
+    }
   };
 
   return (
@@ -40,10 +51,11 @@ const Login = () => {
         <input
           id="email"
           style={{ height: "35px", marginBottom: "20px" }}
-          className="border rounded w-80 focus:outline-purple-700 p-1.5"
+          className={`border rounded w-80 focus:outline-purple-700 p-1.5 ${loginError && "border-red-500 outline-none"}`}
           type="email"
           value={loginData.email}
           onChange={handleInputChange}
+          onClick={handleOnClick}
           required
         />
 
@@ -54,10 +66,11 @@ const Login = () => {
         <input
           id="password"
           style={{ height: "35px" }}
-          className="border rounded w-80 focus:outline-purple-700 p-1.5"
+          className={`border rounded w-80 focus:outline-purple-700 p-1.5 ${loginError && "border-red-500 outline-none"}`}
           type="password"
           value={loginData.password}
           onChange={handleInputChange}
+          onClick={handleOnClick}
           required
         />
 

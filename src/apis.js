@@ -17,12 +17,12 @@ export const login = async ({ email, password }) => {
 
   if (response.status === 200) {
     const data = await response.json();
-    localStorage.setItem("JWT", data.token);
-    localStorage.setItem("id", data.id);
-    localStorage.setItem("profilePicturePath", data.profilePicturePath);
-    localStorage.setItem("fullName", data.fullName);
-    window.location.replace("/");
+    localStorage.setItem("jwt-token", data.jwtToken);
+    localStorage.setItem("user-id", data.userId);
+    window.location.replace("/feed");
   }
+
+  return response
 };
 
 export const signup = async ({ fullName, email, username, password }) => {
@@ -45,19 +45,18 @@ export const signup = async ({ fullName, email, username, password }) => {
   );
 };
 
-export const uploadProfilePicture = async (profilePicture, id) => {
+export const uploadProfilePicture = async (profilePicture, userId) => {
   const form = new FormData();
   form.append("file", profilePicture);
-  form.append("id", id)
-  // console.log(id)
-
+  form.append("userId", userId)
+  
   const response = await fetch(
     `${import.meta.env.VITE_BACKEND_URL}/api/upload-profile-picture`,
     {
       method: "POST",
       body: form,
       headers: {
-        Authorization: `Bearer ${getJwtToken()}`,
+        "Authorization": `Bearer ${getJwtToken()}`,
       },
     }
   );
@@ -78,7 +77,7 @@ export const submitBlog = async ({ title, body }) => {
       body: JSON.stringify(requestBody),
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${getJwtToken()}`,
+        "Authorization": `Bearer ${getJwtToken()}`,
       },
     }
   );
@@ -94,7 +93,7 @@ export const getUserBlogs = async () => {
     {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${getJwtToken()}`,
+        "Authorization": `Bearer ${getJwtToken()}`,
       },
     }
   );
@@ -105,16 +104,34 @@ export const getUserBlogs = async () => {
   }
 };
 
-export const getAllBlogs = async ()=>{
-  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-all-blogs`,
+export const getAllBlogs = async ({pageParam})=>{
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-all-blogs/${pageParam}`,
     {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${getJwtToken()}`
+        "Authorization": `Bearer ${getJwtToken()}`
       }
     }
   )
   const data = await response.json()
+
+  return data
+}
+
+export const getCurrentUserBlogs = async ({pageParam, queryKey})=>{
+  const body = {userId: queryKey[1]}
+
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-current-user-blogs/${pageParam}`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${getJwtToken()}`
+    }
+  })
+
+  const data = await response.json()
+
   return data
 }
 
@@ -136,27 +153,27 @@ export const getUserData = async (id) => {
   return data
 }
 
-export const verifyJwt = async () => {
-  const token = getJwtToken(); 
+export const verifyJwtToken = async () => {
+  const jwtToken = getJwtToken(); 
 
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/private`,
+    `${import.meta.env.VITE_BACKEND_URL}/api/verify-jwt-token`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Authorization": `Bearer ${jwtToken}`,
       },
     }
   );
 
   if (response.status === 200) {
-    return token;
+    return jwtToken;
   } else {
-    window.location.href = "/login"
+    window.location.href = "/login";
   }
 };
 
 const getJwtToken = () => {
-  return localStorage.getItem("JWT");
+  return localStorage.getItem("jwt-token");
 };

@@ -86,7 +86,7 @@ const WriteBlog = ({ useQueryClientFn }) => {
 
           <button
             className="border mt-5 p-3 hover:cursor-pointer hover:bg-purple-700 hover:text-white rounded"
-            onClick={()=>(navigateToProfile(localStorage.getItem("id")))}
+            onClick={()=>(navigateToProfile(localStorage.getItem("user-id")))}
           >
             PROFILE
           </button>

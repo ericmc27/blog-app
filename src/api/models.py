@@ -27,7 +27,7 @@ class Users(db.Model):
     return checkpw(password.encode("utf-8"), self.password)
   
   def hashed_user_id(self):
-    secret_key = "&$/5||-2:lebronL=ebronLebronLebro$nLebron54"
+    secret_key = "&$/5||-2:lebronL=KobeKobeCurry-782bron54"
     unique_identifier = f"{self.id}{secret_key}"
     return f"{sha256(unique_identifier.encode()).hexdigest()}", self.id
   
@@ -73,7 +73,8 @@ class Blogs(db.Model):
       'title':self.blog_title,
       'body':self.blog_body,
       'date':self.transform_date(),
-      'id':self.hashed_blog_id()[0],
-      'profilePicture': self.author.photo,
-      'author': f"{self.author.get_first_two_names()}"
+      'blogId':self.hashed_blog_id()[0],
+      'authorId': self.author.hashed_user_id()[0],
+      'authorProfilePicture': self.author.photo,
+      'authorName': f"{self.author.get_first_two_names()}",
     }

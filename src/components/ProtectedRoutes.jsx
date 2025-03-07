@@ -1,26 +1,26 @@
 import React, { useEffect } from "react"
 import { Outlet, Navigate } from "react-router-dom"
-import { verifyJwt } from "../apis"
+import { verifyJwtToken } from "../apis"
 
 
 const ProtectedRoutes = ()=>{
-  const [token, setToken] = React.useState(null)
+  const [jwtToken, setJwtToken] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
 
   useEffect(()=>{
-      const fetchToken = async ()=>{
-        const token = await verifyJwt() 
-        setToken(token)
+      const fetchJwtToken = async ()=>{
+        const jwtToken = await verifyJwtToken() 
+        setJwtToken(jwtToken)
         setLoading(false)
       }
 
-      fetchToken()
+      fetchJwtToken()
   }, [])
 
   if (loading) return null
 
     return(
-        token !== null ? <Outlet/> : <Navigate to={"/"}/>
+        jwtToken !== null ? <Outlet/> : <Navigate to={"/"}/>
     )
 }
 
