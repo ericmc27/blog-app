@@ -44,6 +44,7 @@ class Users(db.Model):
     return {
       'fullName': self.full_name,
       'profilePicture': self.photo,
+      'id': self.hashed_user_id()[0],
     }
 
 

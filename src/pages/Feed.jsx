@@ -1,15 +1,16 @@
 import React from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCustomNavigate, useCustomQuery } from "../hooks/customHooks";
-import { getUserData, getAllBlogs } from "../apis";
+import { getCurrentUserData, getAllBlogs } from "../apis";
 import { useInView } from "react-intersection-observer";
+;
 
 const Feed = () => {
-  const currentUserId = localStorage.getItem("user-id");
+  const currentUserId = localStorage.getItem("user-id")
 
   const { data: currentUserData } = useCustomQuery(
     ["user", currentUserId],
-    () => getUserData(currentUserId)
+    () => getCurrentUserData(currentUserId),
   );
 
   const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({

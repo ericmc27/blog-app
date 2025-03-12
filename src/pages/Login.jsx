@@ -5,13 +5,13 @@ import { Link } from "react-router-dom";
 const Login = () => {
   const [loginData, setLoginData] = React.useState({ email: "", password: "" });
   const [loginError, setLoginError] = React.useState(false)
-
+  
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setLoginData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleOnClick = (e) => {
+  const handleOnClick = () => {
     if(loginError){
       setLoginError(false)
     }

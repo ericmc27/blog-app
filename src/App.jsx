@@ -1,7 +1,6 @@
 import React from "react";
-import { useCustomQuery } from "./hooks/customHooks";
-import { getAllBlogs, getUserData } from "./apis";
 import { io } from "socket.io-client";
+import { getCurrentUserData } from "./apis";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -9,15 +8,15 @@ import {
 } from "react-router-dom";
 
 import { useQueryClient } from "@tanstack/react-query";
-import Feed from "./pages/Feed";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Profile from "./pages/Profile";
-import WriteBlog from "./pages/WriteBlog";
-import ReadBlog from "./pages/ReadBlog";
-import ProtectedRoutes from "./components/ProtectedRoutes";
-import { useLocation } from "react-router-dom";
-import { verifyJwtToken } from "./apis";
+
+const Feed = React.lazy(()=>import("./pages/Feed"));
+const Login = React.lazy(()=>import("./pages/Login"));
+const Signup = React.lazy(()=>import("./pages/Signup"));
+const Profile = React.lazy(()=>import("./pages/Profile"));
+const WriteBlog = React.lazy(()=>import("./pages/WriteBlog"));
+const ReadBlog = React.lazy(()=>import("./pages/ReadBlog"));
+const ProtectedRoutes = React.lazy(()=>import("./components/ProtectedRoutes"));
+
 
 // const GlobalContext = React.createContext(null);
 
@@ -37,7 +36,7 @@ export const router = createBrowserRouter([
 
   {
     path: "/signup",
-    element: <Signup />,
+    element: <Signup/>,
   },
 
   {
@@ -92,6 +91,9 @@ function App() {
                     ...blog,
                     authorProfilePicture: data.newProfilePicturePath,
                   };
+                }
+                else {
+                  return blog
                 }
               }),
             };

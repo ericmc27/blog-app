@@ -141,8 +141,8 @@ export const getSingleBlog = async (id) => {
   return data
 }
 
-export const getUserData = async (id) => {
-  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-user-data/${id}`, {
+export const getCurrentUserData = async (id) => {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-current-user-data/${id}`, {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",

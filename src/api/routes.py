@@ -1,13 +1,12 @@
 from flask import Blueprint, request, jsonify
 from flask_socketio import SocketIO
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from .models import Users, Blogs, db
 from werkzeug.utils import secure_filename
 import redis
 import os
 import uuid
 import magic
-
 
 
 api = Blueprint('api', __name__)
@@ -22,10 +21,11 @@ def login():
 
   if userExists and userExists.compare_password(password):
     claims = {'id':userExists.id}
-    jwt_token = create_access_token(identity=userExists.username, additional_claims=claims)
+    jwt_token = create_access_token(identity=str(userExists.id), additional_claims=claims)
     return jsonify({'jwtToken':jwt_token, 'userId':userExists.hashed_user_id()[0]}), 200
 
   return jsonify({'login':'unsuccessful'}), 401
+
 
 @api.route('/signup', methods=['POST'])
 def signup():
@@ -44,6 +44,7 @@ def signup():
 
   return jsonify({'signup':'unsuccessful'}), 409
 
+
 ALLOWED_MIME_TYPES = {'image/jpeg', 'image/jpg', 'image/png'}
 
 @api.route('/upload-profile-picture', methods=['POST'])
@@ -52,44 +53,48 @@ def upload():
   try:
     profile_picture = request.files['file']
     user_id = request.form.get('userId')
-  
-
-    if profile_picture:
-      mime = magic.Magic(mime=True)
-      mimetype = mime.from_buffer(profile_picture.read(1024))
+    
+    stored_id = r.get(user_id)
+    
+    if stored_id == get_jwt_identity():
+      if profile_picture:
+        mime = magic.Magic(mime=True)
+        mimetype = mime.from_buffer(profile_picture.read(1024))
       
-      if mimetype in ALLOWED_MIME_TYPES:
-        profile_picture.seek(0)
-        filename = secure_filename(profile_picture.filename)
-        filename = os.path.splitext(filename)[0] + "-" + str(uuid.uuid4()) + os.path.splitext(filename)[1]
-        storage_path = os.path.join(os.getcwd(), 'src', 'static') #Double check when deploying
-        profile_picture.save(os.path.join(storage_path, filename))
-        current_user = Users.query.filter_by(username=get_jwt_identity()).first()
+        if mimetype in ALLOWED_MIME_TYPES:
+          profile_picture.seek(0)
+          filename = secure_filename(profile_picture.filename)
+          filename = os.path.splitext(filename)[0] + "-" + str(uuid.uuid4()) + os.path.splitext(filename)[1]
+          storage_path = os.path.join(os.getcwd(), 'src', 'static') #Double check when deploying
+          profile_picture.save(os.path.join(storage_path, filename))
+          current_user = Users.query.filter_by(id=int(get_jwt_identity())).first()
         
-        if current_user.photo:
-          os.remove(os.path.join(storage_path, current_user.photo))
+          if current_user.photo:
+            os.remove(os.path.join(storage_path, current_user.photo))
 
-        current_user.photo = filename
-        db.session.commit()
+          current_user.photo = filename
+          db.session.commit()
         
-        socketio.emit("userProfilePictureUpdate", {'userId':user_id, 'newProfilePicturePath':filename})
-        return jsonify({'profilePicturePath':filename}), 200
+          socketio.emit("userProfilePictureUpdate", {'userId':user_id, 'newProfilePicturePath':filename})
+          return jsonify({'profilePicturePath':filename}), 200
+        
+        else:
+          return jsonify({'message':'Invalid image type'}), 400
+        
       else:
-        return jsonify({'message':'Invalid image type'}), 400
-      
+        return jsonify({'message':'No file uploaded'}), 400
     else:
-      return jsonify({'message':'No file uploaded'}), 400
-        
+      return jsonify({'message':'Not allowed'}), 403
+    
   except Exception as e:
     return jsonify({'message':'Error'}), 500 #For now, I am checking for KeyError exception
   
-
 
 @api.route('/submit-blog', methods=['POST'])
 @jwt_required()
 def submit_blog():
   data = request.get_json()
-  new_blog = Blogs(author_id=get_jwt()['id'], blog_title=data['title'], blog_body=data['body'])
+  new_blog = Blogs(author_id=int(get_jwt_identity()), blog_title=data['title'], blog_body=data['body'])
   db.session.add(new_blog)
   db.session.commit()
   hash, blog_id = new_blog.hashed_blog_id()
@@ -126,7 +131,7 @@ def get_single_blog(id):
 
   return blog
 
-@api.route('/get-user-data/<string:id>', methods=['GET'])
+@api.route('/get-current-user-data/<string:id>', methods=['GET'])
 @jwt_required()
 def get_user_data(id):
   id = r.get(id)
