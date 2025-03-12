@@ -29,18 +29,18 @@ const Profile = () => {
   };
 
   const {ref, inView} = useInView({triggerOnce: true})
-  console.log(hasNextPage)
+
 
   React.useEffect(()=>{
     if(inView && hasNextPage){
       fetchNextPage()
     }
   }, [inView])
-
+  
   return (
-    <div className="flex h-screen">
-      <div className="mx-auto flex flex-col items-center rounded">
-        <div className="h-45 w-120 flex flex-col items-center justify-center rounded mt-2">
+      <div className="flex flex-col items-center">
+
+        <div className="h-45 w-120 flex flex-col items-center fixed justify-center rounded  bg-white">
           <label htmlFor="profilePicture">
             <div className="h-[120px] w-[120px] border rounded-full hover:cursor-pointer mt-5">
               <img
@@ -66,9 +66,9 @@ const Profile = () => {
           <h3 className="mt-2 capitalize">{currentUserData?.fullName}</h3>
         </div>
 
-        <div className="flex flex-col gap-6 bg-amber-50 px-10">
+        <div className="flex flex-col gap-6 items-center bg-amber-50 mt-45 w-120">
           {data?.pages.map((page, pageIndex) =>
-            page.blogs.map((blog, blogIndex) => {
+            page.blogs?.map((blog, blogIndex) => {
               return (
                 <div
                   key={blog.blogId}
@@ -101,8 +101,8 @@ const Profile = () => {
             })
           )}
         </div>
+
       </div>
-    </div>
   );
 };
 

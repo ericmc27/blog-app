@@ -170,7 +170,10 @@ export const verifyJwtToken = async () => {
   if (response.status === 200) {
     return jwtToken;
   } else {
-    window.location.href = "/login";
+    localStorage.removeItem("jwt-token")
+    localStorage.removeItem("user-id")
+    localStorage.removeItem("REACT_QUERY_OFFLINE_CACHE")
+    return null
   }
 };
 

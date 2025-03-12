@@ -1,6 +1,6 @@
 import React from "react";
 import { useCustomQuery } from "./hooks/customHooks";
-import { getAllBlogs } from "./apis";
+import { getAllBlogs, getUserData } from "./apis";
 import { io } from "socket.io-client";
 import {
   createBrowserRouter,
@@ -16,6 +16,8 @@ import Profile from "./pages/Profile";
 import WriteBlog from "./pages/WriteBlog";
 import ReadBlog from "./pages/ReadBlog";
 import ProtectedRoutes from "./components/ProtectedRoutes";
+import { useLocation } from "react-router-dom";
+import { verifyJwtToken } from "./apis";
 
 // const GlobalContext = React.createContext(null);
 

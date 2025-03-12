@@ -6,7 +6,7 @@ import { verifyJwtToken } from "../apis"
 const ProtectedRoutes = ()=>{
   const [jwtToken, setJwtToken] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
-
+  
   useEffect(()=>{
       const fetchJwtToken = async ()=>{
         const jwtToken = await verifyJwtToken() 
@@ -20,7 +20,7 @@ const ProtectedRoutes = ()=>{
   if (loading) return null
 
     return(
-        jwtToken !== null ? <Outlet/> : <Navigate to={"/"}/>
+        jwtToken  !== null ? <Outlet/> : <Navigate to={"/"}/>
     )
 }
 

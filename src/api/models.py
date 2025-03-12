@@ -44,7 +44,6 @@ class Users(db.Model):
     return {
       'fullName': self.full_name,
       'profilePicture': self.photo,
-      'blogs': [blog.serialize() for blog in self.blogs]
     }
 
 

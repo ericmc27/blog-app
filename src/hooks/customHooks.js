@@ -32,5 +32,5 @@ export const useCustomNavigate = () => {
 };
 
 export const useCustomQuery = (key, fn) => {
-  return useQuery({ queryKey: key, queryFn: fn });
+  return useQuery({ queryKey: key, queryFn: fn});
 };
