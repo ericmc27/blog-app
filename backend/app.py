@@ -11,7 +11,7 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'superman'
-
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 
 db.init_app(app)
 Migrate(app, db)
@@ -23,7 +23,7 @@ socketio.init_app(app, cors_allowed_origins="*")
 
 @app.route('/static/<path:filename>')
 def send_file(filename):
-  response = make_response(send_from_directory(os.path.join(os.getcwd(), 'src', 'static'), filename))
+  response = make_response(send_from_directory(os.path.join(os.getcwd(), 'static'), filename))
   response.headers['Cache-Control'] = 'public, max-age=31536000'
   return response
 

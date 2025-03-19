@@ -9,7 +9,7 @@ const ProtectedRoutes = ()=>{
   
   useEffect(()=>{
       const fetchJwtToken = async ()=>{
-        const jwtToken = await verifyJwtToken() 
+        const jwtToken = await verifyJwtToken()
         setJwtToken(jwtToken)
         setLoading(false)
       }

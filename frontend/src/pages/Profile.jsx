@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import {
-  getCurrentUserData,
+  getCurrentProfileData,
   uploadProfilePicture,
   getCurrentUserBlogs,
 } from "../apis";
@@ -16,27 +16,27 @@ const Profile = () => {
 
   const { data: currentProfileData } = useCustomQuery(
     ["user", currentProfileId],
-    () => getcurrentProfileData(currentProfileId)
+    () => getCurrentProfileData(currentProfileId),
   );
 
-  const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
-    queryKey: ["userBlogs", currentProfileId],
-    queryFn: getCurrentUserBlogs,
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-  });
+  // const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
+  //   queryKey: ["userBlogs", currentProfileId],
+  //   queryFn: getCurrentUserBlogs,
+  //   initialPageParam: 0,
+  //   getNextPageParam: (lastPage) => lastPage.nextPage,
+  // });
 
   const handlePhotoChange = async (e) => {
     await uploadProfilePicture(e.target.files[0], currentProfileId);
   };
 
-  const { ref, inView } = useInView({ triggerOnce: true });
+  // const { ref, inView } = useInView({ triggerOnce: true });
 
-  React.useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView]);
+  // React.useEffect(() => {
+  //   if (inView && hasNextPage) {
+  //     fetchNextPage();
+  //   }
+  // }, [inView]);
 
   return (
     <div className="flex flex-col items-center">
@@ -71,7 +71,7 @@ const Profile = () => {
 
         <h3 className="mt-2 capitalize">{currentProfileData?.fullName}</h3>
       </div>
-
+{/* 
       <div className="flex flex-col gap-6 items-center bg-amber-50 mt-45 w-120">
         {data?.pages.map((page, pageIndex) =>
           page.blogs?.map((blog, blogIndex) => {
@@ -106,7 +106,7 @@ const Profile = () => {
             );
           })
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

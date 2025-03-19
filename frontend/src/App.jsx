@@ -1,6 +1,5 @@
 import React from "react";
 import { io } from "socket.io-client";
-import { getCurrentUserData } from "./apis";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -77,7 +76,7 @@ function App() {
     socket.on("userProfilePictureUpdate", (data) => {
       queryClient.setQueryData(["user", data.userId], (oldData) => {
         return { ...oldData, profilePicture: data.newProfilePicturePath };
-      });
+      });//Works as expected, but will make a lot of requests to the server. 
 
       queryClient.setQueryData(["feedBlogs"], (oldData) => {
         return {

@@ -1,55 +1,55 @@
 import React from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCustomNavigate, useCustomQuery } from "../hooks/customHooks";
-import { getCurrentUserData, getAllBlogs } from "../apis";
+import { getLoggedInUserData, getAllBlogs } from "../apis";
 import { useInView } from "react-intersection-observer";
 ;
 
 const Feed = () => {
-  const currentUserId = localStorage.getItem("user-id")
-
-  const { data: currentUserData } = useCustomQuery(
-    ["user", currentUserId],
-    () => getCurrentUserData(currentUserId),
+  const loggedInUserId = localStorage.getItem("user-id")
+  
+  const { data: loggedInUserData } = useCustomQuery(
+    ["user", loggedInUserId],
+    getLoggedInUserData,
   );
 
-  const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
-    queryKey: ["feedBlogs"],
-    queryFn: getAllBlogs,
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-  });
+  // const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
+  //   queryKey: ["feedBlogs"],
+  //   queryFn: getAllBlogs,
+  //   initialPageParam: 0,
+  //   getNextPageParam: (lastPage) => lastPage.nextPage,
+  // });
 
   const [selection, setSelection] = React.useState("posts");
 
   const { navigateToProfile, navigateToBlog, navigateToPath } =
     useCustomNavigate();
 
-  const { ref, inView } = useInView({ triggerOnce: true });
+  // const { ref, inView } = useInView({ triggerOnce: true });
 
-  React.useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView]);
+  // React.useEffect(() => {
+  //   if (inView && hasNextPage) {
+  //     fetchNextPage();
+  //   }
+  // }, [inView]);
 
   return (
     <div className="flex flex-col">
       <div className="h-11 w-full fixed bg-[#0A1828] "></div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center h-screen">
         
         <ul className="h-100 w-55 p-2 shadow-2xl fixed top-35 left-10 bg-white rounded-2xl hidden xl:block">
           <li
             className={`flex flex-col p-2 rounded`}
-            onClick={() => navigateToProfile(currentUserId)}
+            onClick={() => navigateToProfile(loggedInUserId)}
           >
             <img
               className="w-15 h-15 mb-4 rounded-full m-auto hover:cursor-pointer border border-gray-300"
               src={
-                currentUserData?.profilePicture
+                loggedInUserData?.profilePicture
                   ? `${import.meta.env.VITE_BACKEND_URL}/static/${
-                      currentUserData?.profilePicture
+                      loggedInUserData?.profilePicture
                     }`
                   : "/profile-picture-placeholder.png"
               }
@@ -77,7 +77,7 @@ const Feed = () => {
           </li>
         </ul>
 
-        {selection === "posts" ? (
+        {/* {selection === "posts" ? (
           <div className="flex flex-col items-center pt-16 shadow-2xl w-170 rounded bg-white">
             {data?.pages[0]?.blogs?.length > 0 ? (
               data.pages?.map((page, pageIndex) =>
@@ -129,14 +129,12 @@ const Feed = () => {
                 ))
               )
             ) : (
-              <div className="h-120 w-75 flex">
                 <button
                   onClick={() => navigateToPath("/write-blog")}
-                  className="border p-2 rounded h-14 w-40 bg-purple-700 text-white ms-31 my-auto hover:cursor-pointer"
+                  className="border p-2 rounded h-14 w-40 bg-purple-700 text-white ms-12 my-auto hover:cursor-pointer"
                 >
                   Write the first blog
                 </button>
-              </div>
             )}
           </div>
         ) : (
@@ -145,7 +143,7 @@ const Feed = () => {
               <h1>Join group</h1>
             </div>
           )
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ export const login = async ({ email, password }) => {
   };
 
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/login`,
+    `/api/login`,
     {
       method: "POST",
       body: JSON.stringify(body),
@@ -17,7 +17,7 @@ export const login = async ({ email, password }) => {
 
   if (response.status === 200) {
     const data = await response.json();
-    localStorage.setItem("jwt-token", data.jwtToken);
+    console.log(data)
     localStorage.setItem("user-id", data.userId);
     window.location.replace("/feed");
   }
@@ -34,7 +34,7 @@ export const signup = async ({ fullName, email, username, password }) => {
   };
 
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/signup`,
+    `/api/signup`,
     {
       method: "POST",
       body: JSON.stringify(body),
@@ -49,35 +49,29 @@ export const uploadProfilePicture = async (profilePicture, userId) => {
   const form = new FormData();
   form.append("file", profilePicture);
   form.append("userId", userId)
-  
+
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/upload-profile-picture`,
+    `/api/upload-profile-picture`,
     {
       method: "POST",
       body: form,
       headers: {
-        "Authorization": `Bearer ${getJwtToken()}`,
-      },
+        'X-CSRF-TOKEN': await getCsrfToken()
+      }
     }
   );
-
-  if (response.status === 200) {
-    const data = await response.json();
-    return data.profilePicturePath;
-  }
 };
 
 export const submitBlog = async ({ title, body }) => {
   const requestBody = { title, body };
 
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/submit-blog`,
+    `/api/submit-blog`,
     {
       method: "POST",
       body: JSON.stringify(requestBody),
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${getJwtToken()}`,
       },
     }
   );
@@ -88,15 +82,7 @@ export const submitBlog = async ({ title, body }) => {
 };
 
 export const getUserBlogs = async () => {
-  const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/get-user-blogs`,
-    {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${getJwtToken()}`,
-      },
-    }
-  );
+  const response = await fetch(`/api/get-user-blogs`,{method: "GET"});
 
   if(response.status === 200){
     const blogs = await response.json()
@@ -105,78 +91,59 @@ export const getUserBlogs = async () => {
 };
 
 export const getAllBlogs = async ({pageParam})=>{
-  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-all-blogs/${pageParam}`,
-    {
-      method: 'GET',
-      headers: {
-        "Authorization": `Bearer ${getJwtToken()}`
-      }
-    }
-  )
+  const response = await fetch(`/api/get-all-blogs/${pageParam}`, {method: 'GET'})
   const data = await response.json()
-
   return data
 }
 
 export const getCurrentUserBlogs = async ({pageParam, queryKey})=>{
   const body = {userId: queryKey[1]}
+  const csrfToken = await getCsrfToken()
 
-  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-current-user-blogs/${pageParam}`, {
+  const response = await fetch(`/api/get-current-user-blogs/${pageParam}`, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${getJwtToken()}`
+      "X-CSRF-TOKEN": csrfToken
     }
   })
 
   const data = await response.json()
-
   return data
 }
 
 export const getSingleBlog = async (id) => {
-  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-single-blog/${id}`)
+  const response = await fetch(`/api/get-single-blog/${id}`, {method: 'GET'})
   const data = await response.json()
   return data
 }
 
-export const getCurrentUserData = async (id) => {
-  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/get-current-user-data/${id}`, {
-    method: 'GET',
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${getJwtToken()}`
-    }
-  })
+export const getLoggedInUserData = async () => {
+  const response = await fetch("/api/get-logged-in-user-data", {method: 'GET'})
   const data = await response.json()
+  console.log(data)
+  return data
+}
+
+export const getCurrentProfileData = async (id) => {
+  const response = await fetch(`/api/get-current-user-data/${id}`, {method: 'GET'})
+  const data = await response.json()
+  console.log(data)
   return data
 }
 
 export const verifyJwtToken = async () => {
-  const jwtToken = getJwtToken(); 
-
-  const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/verify-jwt-token`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${jwtToken}`,
-      },
-    }
-  );
+  const response = await fetch(`/api/verify-jwt-token`, {method: 'GET'})
 
   if (response.status === 200) {
-    return jwtToken;
+    return response.json()
   } else {
-    localStorage.removeItem("jwt-token")
-    localStorage.removeItem("user-id")
-    localStorage.removeItem("REACT_QUERY_OFFLINE_CACHE")
+    localStorage.removeItem("user-id")  
     return null
   }
 };
 
-const getJwtToken = () => {
-  return localStorage.getItem("jwt-token");
-};
+const getCsrfToken = async () => {
+  return document.cookie.split("=")[1]
+}

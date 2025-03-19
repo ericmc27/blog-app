@@ -1,12 +1,13 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from flask_socketio import SocketIO
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt, set_access_cookies, decode_token
 from .models import Users, Blogs, db
 from werkzeug.utils import secure_filename
 import redis
 import os
 import uuid
 import magic
+import json
 
 
 api = Blueprint('api', __name__)
@@ -20,9 +21,11 @@ def login():
   userExists = Users.query.filter_by(email=email).first()
 
   if userExists and userExists.compare_password(password):
-    claims = {'id':userExists.id}
+    claims = {'hash_id':userExists.hashed_user_id()[0]}
     jwt_token = create_access_token(identity=str(userExists.id), additional_claims=claims)
-    return jsonify({'jwtToken':jwt_token, 'userId':userExists.hashed_user_id()[0]}), 200
+    response = make_response({'userId':userExists.hashed_user_id()[0]}, 200)
+    set_access_cookies(response, jwt_token)
+    return response
 
   return jsonify({'login':'unsuccessful'}), 401
 
@@ -38,8 +41,8 @@ def signup():
     new_user.hash_password()
     db.session.add(new_user)
     db.session.commit()
-    hash, user_id = new_user.hashed_user_id()
-    r.set(hash, user_id)
+    hash = new_user.hashed_user_id()[0]
+    r.hset(hash, mapping={"fullName":new_user.full_name, "profilePicture":"", "blogs":json.dumps([])})
     return jsonify({'signup':'successful'}), 200
 
   return jsonify({'signup':'unsuccessful'}), 409
@@ -47,16 +50,15 @@ def signup():
 
 ALLOWED_MIME_TYPES = {'image/jpeg', 'image/jpg', 'image/png'}
 
-@api.route('/upload-profile-picture', methods=['POST'])
+@api.route('/upload-profile-picture', methods=['POST'])#->
 @jwt_required()
 def upload():
   try:
     profile_picture = request.files['file']
     user_id = request.form.get('userId')
-    
-    stored_id = r.get(user_id)
-    
-    if stored_id == get_jwt_identity():
+
+    print(user_id)
+    if get_jwt()["hash_id"] == user_id:
       if profile_picture:
         mime = magic.Magic(mime=True)
         mimetype = mime.from_buffer(profile_picture.read(1024))
@@ -65,7 +67,7 @@ def upload():
           profile_picture.seek(0)
           filename = secure_filename(profile_picture.filename)
           filename = os.path.splitext(filename)[0] + "-" + str(uuid.uuid4()) + os.path.splitext(filename)[1]
-          storage_path = os.path.join(os.getcwd(), 'src', 'static') #Double check when deploying
+          storage_path = os.path.join(os.getcwd(), 'static') #Double check when deploying
           profile_picture.save(os.path.join(storage_path, filename))
           current_user = Users.query.filter_by(id=int(get_jwt_identity())).first()
         
@@ -75,6 +77,7 @@ def upload():
           current_user.photo = filename
           db.session.commit()
         
+          r.hset(user_id, "profilePicture", filename)
           socketio.emit("userProfilePictureUpdate", {'userId':user_id, 'newProfilePicturePath':filename})
           return jsonify({'profilePicturePath':filename}), 200
         
@@ -131,16 +134,48 @@ def get_single_blog(id):
 
   return blog
 
+
+#-------------------------------------------------------------------------------------------
+@api.route('/get-logged-in-user-data', methods=['GET'])
+@jwt_required()
+def get_logged_in_user_data():
+  hash = get_jwt()["hash_id"]
+  logged_in_user_data = r.hgetall(hash)
+  
+  if len(logged_in_user_data) == 0:
+    user = Users.query.filter_by(id=int(get_jwt_identity())).first()
+    
+    if not user:
+      return jsonify({'message':'User not found'}), 404
+    
+    logged_in_user_data = user.serialize()
+    
+    r.hset(hash, mapping={"fullName":logged_in_user_data.full_name, "profilePicture":logged_in_user_data.get("photo", ""), "blogs":json.dumps(logged_in_user_data.get("blogs", []))})
+  
+  return jsonify(logged_in_user_data)
+
 @api.route('/get-current-user-data/<string:id>', methods=['GET'])
 @jwt_required()
 def get_user_data(id):
-  id = r.get(id)
-  current_user = Users.query.filter_by(id=id).first().serialize()
-  
-  return jsonify(current_user)
+  """#This can affect performance if the data is too large,
+  but I am only storing small amount of data"""
+  current_user_data = r.hgetall(id) #O(n) operations
+ 
+  #This is a fallback mechanism
+  if len(current_user_data) == 0:
+    user = Users.query.filter_by(id=id).first()
+    
+    if not user:
+      return jsonify({'message':'User not found'}), 404 #log
 
-@api.route('/verify-jwt-token', methods=['POST'])
+    current_user_data = user.serialize()
+    
+    r.hset(id, mapping={"fullName":current_user_data.full_name, "profilePicture":current_user_data.get("photo", ""), "blogs":json.dumps(current_user_data.get("blogs", []))})
+    
+  return jsonify(current_user_data)
+
+@api.route('/verify-jwt-token', methods=['GET'])#->
 @jwt_required()
 def verify_jwt_token():
-  return jsonify({'token':'valid'})
+  return jsonify({'token':'valid'}), 200
 
